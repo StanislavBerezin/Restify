@@ -61,4 +61,53 @@ module.exports = server => {
     }
   );
 
+  // Update Customer
+  server.put(
+    '/customers/:id',
+    rjwt({ secret: config.JWT_SECRET }),
+    async (req, res, next) => {
+      // Check for JSON
+      if (!req.is('application/json')) {
+        return next(
+          new errors.InvalidContentError("Expects 'application/json'")
+        );
+      }
+
+      try {
+        const customer = await Customer.findOneAndUpdate(
+          { _id: req.params.id },
+          req.body
+        );
+        res.send(200);
+        next();
+      } catch (err) {
+        return next(
+          new errors.ResourceNotFoundError(
+            `There is no customer with the id of ${req.params.id}`
+          )
+        );
+      }
+    }
+  );
+
+  // Delete Customer
+  server.del(
+    '/customers/:id',
+    rjwt({ secret: config.JWT_SECRET }),
+    async (req, res, next) => {
+      try {
+        const customer = await Customer.findOneAndRemove({
+          _id: req.params.id
+        });
+        res.send(204);
+        next();
+      } catch (err) {
+        return next(
+          new errors.ResourceNotFoundError(
+            `There is no customer with the id of ${req.params.id}`
+          )
+        );
+      }
+    }
+  );
 };
